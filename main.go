@@ -1,8 +1,8 @@
 package main
 
-import "crm_go/delivery/http"
+import "crm_go/delivery/httpserver"
 
 func main() {
-	httpServer := http.NewServer()
+	httpServer := httpserver.New()
 	httpServer.Start()
 }

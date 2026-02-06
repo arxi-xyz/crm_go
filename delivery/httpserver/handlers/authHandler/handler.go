@@ -2,6 +2,7 @@ package authHandler
 
 import (
 	"crm_go/services/authService"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -31,7 +32,11 @@ func (h *AuthHandler) Login(c *echo.Context) error {
 		Password: c.FormValue("password"),
 	}
 
-	resp, _ := h.AuthService.Login(req)
+	resp, err := h.AuthService.Login(req)
+
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	return c.JSON(http.StatusOK, resp)
 }

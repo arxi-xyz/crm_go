@@ -1,12 +1,12 @@
 package authService
 
-import "crm_go/pkg/validation"
+import (
+	"crm_go/pkg/validation"
+)
 
 func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
 
-	err := validation.V().Struct(request)
-
-	if err != nil {
+	if err := validation.V().Struct(request); err != nil {
 		return LoginResponse{}, err
 	}
 

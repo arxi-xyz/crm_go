@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"crm_go/delivery/httpserver/handlers/authHandler"
+	"crm_go/pkg/httpx"
 	"crm_go/repositories/userRepository"
 	"crm_go/services/authService"
 	"net/http"
@@ -21,6 +22,8 @@ func (s *Server) Start() {
 	e := echo.New()
 	e.Use(middleware.RequestLogger())
 
+	e.HTTPErrorHandler = httpx.NewErrorHandler()
+	
 	api := e.Group("/api")
 
 	handler := authHandler.AuthHandler{

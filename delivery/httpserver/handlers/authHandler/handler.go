@@ -2,7 +2,6 @@ package authHandler
 
 import (
 	"crm_go/services/authService"
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -26,16 +25,16 @@ func (h *AuthHandler) Logout(c *echo.Context) error {
 }
 
 func (h *AuthHandler) Login(c *echo.Context) error {
+	var req authService.LoginRequest
 
-	req := authService.LoginRequest{
-		Phone:    c.FormValue("phone"),
-		Password: c.FormValue("password"),
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid_body")
 	}
 
 	resp, err := h.AuthService.Login(req)
 
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
 	return c.JSON(http.StatusOK, resp)

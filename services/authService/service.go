@@ -2,16 +2,15 @@ package authService
 
 import (
 	"crm_go/entities"
-	"crm_go/repositories/userRepository"
 )
 
 type AuthService struct {
 	UserRepository userRepositoryInterface
 }
 
-func New(userRepository userRepository.UserRepository) *AuthService {
+func New(userRepository userRepositoryInterface) *AuthService {
 	return &AuthService{
-		UserRepository: &userRepository,
+		UserRepository: userRepository,
 	}
 }
 

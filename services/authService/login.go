@@ -25,7 +25,7 @@ func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
 	return LoginResponse{
 		Token:        "token",
 		RefreshToken: "refresh",
-		User:         UserLoginResponse{FirstName: user.FirstName, LastName: user.LastName, Phone: user.Phone},
+		User:         UserLoginResponse{FirstName: user.FirstName.String, LastName: user.LastName.String, Phone: user.Phone},
 	}, nil
 }
 

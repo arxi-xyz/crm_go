@@ -1,7 +1,18 @@
 package entities
 
+import (
+	"database/sql"
+	"time"
+
+	"github.com/google/uuid"
+)
+
 type User struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Phone     string `json:"phone"`
+	ID        int64
+	UUID      uuid.UUID
+	Phone     string
+	FirstName sql.NullString
+	LastName  sql.NullString
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

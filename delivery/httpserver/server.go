@@ -1,10 +1,7 @@
 package httpserver
 
 import (
-	"crm_go/delivery/httpserver/handlers/authHandler"
 	"crm_go/pkg/httpx"
-	"crm_go/repositories/userRepository"
-	"crm_go/services/authService"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -12,10 +9,18 @@ import (
 )
 
 type Server struct {
+	authHandler authHandlerInterface
 }
 
-func New() *Server {
-	return &Server{}
+func New(authHandler authHandlerInterface) *Server {
+	return &Server{
+		authHandler: authHandler,
+	}
+}
+
+type authHandlerInterface interface {
+	Login(c *echo.Context) error
+	Logout(c *echo.Context) error
 }
 
 func (s *Server) Start() {
@@ -23,15 +28,12 @@ func (s *Server) Start() {
 	e.Use(middleware.RequestLogger())
 
 	e.HTTPErrorHandler = httpx.NewErrorHandler()
-	
+
 	api := e.Group("/api")
 
-	handler := authHandler.AuthHandler{
-		AuthService: authService.New(userRepository.UserRepository{}),
-	}
 	auth := api.Group("/auth")
-	auth.POST("/login", handler.Login)
-	auth.GET("/logout", handler.Logout)
+	auth.POST("/login", s.authHandler.Login)
+	auth.GET("/logout", s.authHandler.Logout)
 
 	e.GET("/api/ping", func(c *echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"message": "pong"})

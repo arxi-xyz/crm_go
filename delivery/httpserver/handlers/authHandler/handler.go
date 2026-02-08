@@ -15,8 +15,8 @@ type authServiceInterface interface {
 	Login(request authService.LoginRequest) (authService.LoginResponse, error)
 }
 
-func New() *AuthHandler {
-	return &AuthHandler{}
+func New(authService authServiceInterface) *AuthHandler {
+	return &AuthHandler{authService}
 }
 
 func (h *AuthHandler) Logout(c *echo.Context) error {

@@ -1,7 +1,9 @@
 package authService
 
 import (
+	"crm_go/pkg/appError"
 	"crm_go/pkg/validation"
+	"errors"
 )
 
 func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
@@ -13,7 +15,11 @@ func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
 	user, err := s.UserRepository.GetUserByPhone(request.Phone)
 
 	if err != nil {
-		panic("User not found")
+		if errors.Is(err, appError.ErrUserNotFound) {
+			return LoginResponse{}, appError.NotFound("user_not_found", "user not found", err)
+		}
+
+		return LoginResponse{}, appError.Internal(err)
 	}
 
 	return LoginResponse{

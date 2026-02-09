@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users
     phone      TEXT        NOT NULL,
     first_name TEXT,
     last_name  TEXT,
+    password   TEXT,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -21,3 +22,7 @@ CREATE UNIQUE INDEX users_phone_unique
 
 CREATE INDEX users_created_at_idx
     ON users (created_at DESC);
+
+-- todo: the default user must be read from config file
+insert into users (phone, first_name, last_name, password, deleted_at)
+values ('09130108631', 'hossein', 'sharif', 'secret', null);

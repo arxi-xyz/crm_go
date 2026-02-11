@@ -3,7 +3,6 @@ package authService
 import (
 	"crm_go/pkg/appError"
 	"crm_go/pkg/validation"
-	"errors"
 )
 
 func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
@@ -14,18 +13,29 @@ func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
 
 	user, err := s.UserRepository.GetUserByPhone(request.Phone)
 
-	if err != nil {
-		if errors.Is(err, appError.ErrUserNotFound) {
-			return LoginResponse{}, appError.NotFound("user_not_found", "user not found", err)
-		}
+	if user == nil {
+		return LoginResponse{}, appError.Unauthorized("invalid_credential", "invalid credential", err)
+	}
+	// todo: password must be hashed
+	if user.Password != request.Password {
+		return LoginResponse{}, appError.Unauthorized("invalid_credential", "invalid_credential", err)
+	}
 
+	token, refreshToken, err := s.generateTokens(*user)
+
+	if err != nil {
 		return LoginResponse{}, appError.Internal(err)
 	}
 
 	return LoginResponse{
-		Token:        "token",
-		RefreshToken: "refresh",
-		User:         UserLoginResponse{FirstName: user.FirstName.String, LastName: user.LastName.String, Phone: user.Phone},
+		Token:        token,
+		RefreshToken: refreshToken,
+		User: UserLoginResponse{
+			Uuid:      user.UUID,
+			FirstName: user.FirstName.String,
+			LastName:  user.LastName.String,
+			Phone:     user.Phone,
+		},
 	}, nil
 }
 
@@ -41,6 +51,7 @@ type LoginResponse struct {
 }
 
 type UserLoginResponse struct {
+	Uuid      string `json:"uuid"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Phone     string `json:"phone"`

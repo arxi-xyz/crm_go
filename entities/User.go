@@ -3,14 +3,13 @@ package entities
 import (
 	"database/sql"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type User struct {
 	ID        int64
-	UUID      uuid.UUID
+	UUID      string
 	Phone     string
+	Password  string
 	FirstName sql.NullString
 	LastName  sql.NullString
 	CreatedAt time.Time

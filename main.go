@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crm_go/cache/redis"
 	"crm_go/db/postgres"
 	"crm_go/delivery/httpserver"
 	"crm_go/delivery/httpserver/handlers/authHandler"
@@ -8,6 +9,7 @@ import (
 	"crm_go/repositories/userRepository"
 	"crm_go/services/authService"
 	"log"
+	"time"
 )
 
 func main() {
@@ -20,13 +22,28 @@ func main() {
 		Database: "crm",
 		SSLMode:  "disable",
 	})
+
+	cache := redis.New(redis.Config{
+		Host:     "localhost",
+		Port:     "6379",
+		Password: "",
+		Db:       0,
+	})
+
+	authConfig := authService.Config{
+		JWTSecret:  []byte("sharif_secret"),
+		AccessTTL:  15 * time.Minute,
+		RefreshTTL: 30 * 24 * time.Hour,
+		Issuer:     "crm_go",
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer db.Close()
 
 	repo := userRepository.New(db)
-	svc := authService.New(repo)
+	svc := authService.New(repo, *cache, authConfig)
 	h := authHandler.New(svc)
 
 	srv := httpserver.New(h)

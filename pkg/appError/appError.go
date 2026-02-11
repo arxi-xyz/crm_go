@@ -2,6 +2,7 @@ package appError
 
 import (
 	"errors"
+	"log"
 	"net/http"
 )
 
@@ -51,7 +52,8 @@ func Conflict(code, message string, err error) *AppError {
 }
 
 func Internal(err error) *AppError {
-	return New(http.StatusInternalServerError, "internal_error", "خطای داخلی سرور", err, nil)
+	log.Println(err.Error())
+	return New(http.StatusInternalServerError, "internal_error", "internal error", err, nil)
 }
 
 func AsAppError(err error) (*AppError, bool) {

@@ -22,6 +22,7 @@ func V() *validator.Validate {
 func RegisterRules(v *validator.Validate) {
 	rules := map[string]validator.Func{
 		"ir_phone_number": IrPhoneNumberRule,
+		"jwt_token":       JwtTokenRule,
 	}
 
 	for tag, fn := range rules {

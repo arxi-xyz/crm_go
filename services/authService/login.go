@@ -3,6 +3,8 @@ package authService
 import (
 	"crm_go/pkg/appError"
 	"crm_go/pkg/validation"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
@@ -16,9 +18,18 @@ func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
 	if user == nil {
 		return LoginResponse{}, appError.Unauthorized("invalid_credential", "invalid credential", err)
 	}
-	// todo: password must be hashed
-	if user.Password != request.Password {
-		return LoginResponse{}, appError.Unauthorized("invalid_credential", "invalid_credential", err)
+
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(user.Password),
+		[]byte(request.Password),
+	)
+
+	if err != nil {
+		return LoginResponse{}, appError.Unauthorized(
+			"invalid_credential",
+			"invalid_credential",
+			err,
+		)
 	}
 
 	token, refreshToken, err := s.generateTokens(*user)

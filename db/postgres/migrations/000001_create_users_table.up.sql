@@ -25,4 +25,4 @@ CREATE INDEX users_created_at_idx
 
 -- todo: the default user must be read from config file
 insert into users (phone, first_name, last_name, password, deleted_at)
-values ('09130108631', 'hossein', 'sharif', 'secret', null);
+values ('09130108631', 'hossein', 'sharif', '$2a$10$PAQ6Ez0iHO/A2ndkrQl4Yuuoslqai6TFi0VB15fOkJjkTXOI4KKqG', null);

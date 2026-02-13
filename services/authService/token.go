@@ -2,7 +2,7 @@ package authService
 
 import (
 	"context"
-	"crm_go/entities"
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -19,13 +19,13 @@ type RefreshClaims struct {
 	TokenType string `json:"typ"`
 }
 
-func (s *AuthService) generateTokens(user entities.User) (string, string, error) {
+func (s *AuthService) generateTokens(uUid string) (string, string, error) {
 	now := time.Now()
 
 	accessClaims := AccessClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    s.Config.Issuer,
-			Subject:   user.UUID,
+			Subject:   uUid,
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(s.Config.AccessTTL)),
 		},
@@ -42,7 +42,7 @@ func (s *AuthService) generateTokens(user entities.User) (string, string, error)
 	refreshClaims := RefreshClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    s.Config.Issuer,
-			Subject:   user.UUID,
+			Subject:   uUid,
 			ID:        jti,
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(s.Config.RefreshTTL)),
@@ -57,7 +57,7 @@ func (s *AuthService) generateTokens(user entities.User) (string, string, error)
 	}
 
 	redisInfo := map[string]any{
-		"uid": user.UUID,
+		"uid": uUid,
 		"iat": now.Unix(),
 		"exp": now.Add(s.Config.RefreshTTL).Unix(),
 	}
@@ -74,4 +74,22 @@ func (s *AuthService) generateTokens(user entities.User) (string, string, error)
 	}
 
 	return access, refresh, nil
+}
+
+func (s *AuthService) parseRefreshClaim(token string) (*RefreshClaims, error) {
+	claims := &RefreshClaims{}
+
+	withClaims, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return s.Config.JWTSecret, nil
+	})
+
+	if err != nil {
+		return claims, err
+	}
+
+	if !withClaims.Valid {
+		return claims, errors.New("invalid token")
+	}
+
+	return claims, nil
 }

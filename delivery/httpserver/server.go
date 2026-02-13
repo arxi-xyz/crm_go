@@ -1,6 +1,7 @@
 package httpserver
 
 import (
+	"crm_go/delivery/httpserver/handlers/authHandler"
 	"crm_go/pkg/httpx"
 	"net/http"
 
@@ -9,18 +10,13 @@ import (
 )
 
 type Server struct {
-	authHandler authHandlerInterface
+	authHandler *authHandler.AuthHandler
 }
 
-func New(authHandler authHandlerInterface) *Server {
+func New(authHandler *authHandler.AuthHandler) *Server {
 	return &Server{
 		authHandler: authHandler,
 	}
-}
-
-type authHandlerInterface interface {
-	Login(c *echo.Context) error
-	Logout(c *echo.Context) error
 }
 
 func (s *Server) Start() {
@@ -33,6 +29,7 @@ func (s *Server) Start() {
 
 	auth := api.Group("/auth")
 	auth.POST("/login", s.authHandler.Login)
+	auth.POST("/refresh", s.authHandler.Refresh)
 	auth.GET("/logout", s.authHandler.Logout)
 
 	e.GET("/api/ping", func(c *echo.Context) error {

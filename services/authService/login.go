@@ -32,7 +32,7 @@ func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
 		)
 	}
 
-	token, refreshToken, err := s.generateTokens(*user)
+	token, refreshToken, err := s.generateTokens(user.UUID)
 
 	if err != nil {
 		return LoginResponse{}, appError.Internal(err)

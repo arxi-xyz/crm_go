@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 type Server struct {
@@ -25,6 +26,15 @@ func (s *Server) Start() {
 
 	e.HTTPErrorHandler = httpx.NewErrorHandler()
 
+	// Swagger
+	swaggerHandler := httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	)
+	e.GET("/swagger/*", func(c *echo.Context) error {
+		swaggerHandler.ServeHTTP(c.Response(), c.Request())
+		return nil
+	})
+
 	api := e.Group("/api")
 
 	auth := api.Group("/auth")
@@ -32,12 +42,19 @@ func (s *Server) Start() {
 	auth.POST("/refresh", s.authHandler.Refresh)
 	auth.GET("/logout", s.authHandler.Logout)
 
-	e.GET("/api/ping", func(c *echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{"message": "pong"})
-	})
+	api.GET("/ping", s.Ping)
 
 	if err := e.Start(":8099"); err != nil {
 		e.Logger.Error("failed to start server", "error", err)
 	}
+}
 
+// @Summary		Health check
+// @Description	Returns pong to verify the API is running
+// @Tags			Health
+// @Produce		json
+// @Success		200	{object}	map[string]string
+// @Router			/ping [get]
+func (s *Server) Ping(c *echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]string{"message": "pong"})
 }

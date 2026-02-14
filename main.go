@@ -10,7 +10,16 @@ import (
 	"crm_go/services/authService"
 	"log"
 	"time"
+
+	_ "crm_go/docs"
 )
+
+//	@title			CRM Go API
+//	@version		1.0
+//	@description	A CRM backend API built with Go and Echo framework
+
+//	@host		localhost:8099
+//	@BasePath	/api
 
 func main() {
 	validation.Init()

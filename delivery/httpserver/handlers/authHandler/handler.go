@@ -21,6 +21,15 @@ func New(authService authServiceInterface) *AuthHandler {
 	return &AuthHandler{authService}
 }
 
+// @Summary		Logout user
+// @Description	Invalidate user's refresh token session
+// @Tags			Auth
+// @Produce		json
+// @Param			Authorization	header		string	true	"Refresh Token"
+// @Success		200				{object}	map[string]string
+// @Failure		400				{object}	httpx.ErrorResponse
+// @Failure		401				{object}	httpx.ErrorResponse
+// @Router			/auth/logout [get]
 func (h *AuthHandler) Logout(c *echo.Context) error {
 	var req authService.LogoutRequest
 
@@ -39,6 +48,17 @@ func (h *AuthHandler) Logout(c *echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{})
 }
 
+// @Summary		Login user
+// @Description	Authenticate user with phone number and password
+// @Tags			Auth
+// @Accept			json
+// @Produce		json
+// @Param			request	body		authService.LoginRequest	true	"Login credentials"
+// @Success		200		{object}	authService.LoginResponse
+// @Failure		400		{object}	httpx.ErrorResponse
+// @Failure		401		{object}	httpx.ErrorResponse
+// @Failure		500		{object}	httpx.ErrorResponse
+// @Router			/auth/login [post]
 func (h *AuthHandler) Login(c *echo.Context) error {
 	var req authService.LoginRequest
 
@@ -55,6 +75,15 @@ func (h *AuthHandler) Login(c *echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
+// @Summary		Refresh tokens
+// @Description	Get new access and refresh tokens using a valid refresh token
+// @Tags			Auth
+// @Produce		json
+// @Param			Authorization	header		string	true	"Refresh Token"
+// @Success		200				{object}	authService.RefreshResponse
+// @Failure		400				{object}	httpx.ErrorResponse
+// @Failure		401				{object}	httpx.ErrorResponse
+// @Router			/auth/refresh [post]
 func (h *AuthHandler) Refresh(c *echo.Context) error {
 	// todo: duplicate code
 	var req authService.RefreshRequest

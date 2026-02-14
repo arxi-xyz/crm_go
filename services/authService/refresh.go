@@ -60,10 +60,10 @@ func (s *AuthService) Refresh(request RefreshRequest) (RefreshResponse, error) {
 }
 
 type RefreshRequest struct {
-	RefreshToken string `json:"refresh_token" validate:"required,jwt_token"`
+	RefreshToken string `json:"refresh_token" validate:"required,jwt_token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
 }
 
 type RefreshResponse struct {
-	Token        string `json:"token"`
-	RefreshToken string `json:"refresh_token"`
+	Token        string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+	RefreshToken string `json:"refresh_token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
 }

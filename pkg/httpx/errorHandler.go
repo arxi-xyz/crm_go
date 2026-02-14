@@ -8,8 +8,8 @@ import (
 )
 
 type ErrorResponse struct {
-	Code    string         `json:"code"`
-	Message string         `json:"message"`
+	Code    string         `json:"code" example:"validation_error"`
+	Message string         `json:"message" example:"invalid input"`
 	Meta    map[string]any `json:"meta,omitempty"`
 }
 

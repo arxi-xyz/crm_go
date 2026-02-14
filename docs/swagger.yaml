@@ -1,0 +1,175 @@
+basePath: /api
+definitions:
+  authService.LoginRequest:
+    properties:
+      password:
+        example: mypassword123
+        minLength: 8
+        type: string
+      phone:
+        example: "09130108631"
+        type: string
+    required:
+    - password
+    - phone
+    type: object
+  authService.LoginResponse:
+    properties:
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/authService.UserLoginResponse'
+    type: object
+  authService.RefreshResponse:
+    properties:
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  authService.UserLoginResponse:
+    properties:
+      first_name:
+        example: Sharif
+        type: string
+      last_name:
+        example: Mohammadi
+        type: string
+      phone:
+        example: "09130108631"
+        type: string
+      uuid:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  httpx.ErrorResponse:
+    properties:
+      code:
+        example: validation_error
+        type: string
+      message:
+        example: invalid input
+        type: string
+      meta:
+        additionalProperties: {}
+        type: object
+    type: object
+host: localhost:8099
+info:
+  contact: {}
+  description: A CRM backend API built with Go and Echo framework
+  title: CRM Go API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with phone number and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/authService.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/authService.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      summary: Login user
+      tags:
+      - Auth
+  /auth/logout:
+    get:
+      description: Invalidate user's refresh token session
+      parameters:
+      - description: Refresh Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      summary: Logout user
+      tags:
+      - Auth
+  /auth/refresh:
+    post:
+      description: Get new access and refresh tokens using a valid refresh token
+      parameters:
+      - description: Refresh Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/authService.RefreshResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      summary: Refresh tokens
+      tags:
+      - Auth
+  /ping:
+    get:
+      description: Returns pong to verify the API is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - Health
+swagger: "2.0"

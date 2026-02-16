@@ -51,9 +51,21 @@ services:
       JWT_ISSUER: crm_go
     labels:
       - "traefik.enable=true"
+      - "traefik.http.services.api.loadbalancer.server.port=8099"
+
       - "traefik.http.routers.api.rule=Host(`localhost`)"
       - "traefik.http.routers.api.entrypoints=web"
-      - "traefik.http.services.api.loadbalancer.server.port=8099"
+      - "traefik.http.routers.api.priority=1"
+      - "traefik.http.routers.api.middlewares=ratelimit-general"
+
+      - "traefik.http.routers.api-auth.rule=Host(`localhost`) && PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.api-auth.entrypoints=web"
+      - "traefik.http.routers.api-auth.middlewares=ratelimit-auth"
+
+      - "traefik.http.middlewares.ratelimit-general.ratelimit.average=100"
+      - "traefik.http.middlewares.ratelimit-general.ratelimit.burst=50"
+      - "traefik.http.middlewares.ratelimit-auth.ratelimit.average=10"
+      - "traefik.http.middlewares.ratelimit-auth.ratelimit.burst=20"
 
   postgres:
     image: postgres:16-alpine

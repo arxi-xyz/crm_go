@@ -32,6 +32,24 @@ func New(
 func (s *Server) Start(addr string) {
 	e := echo.New()
 	e.Use(middleware.RequestLogger())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+			http.MethodOptions,
+		},
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Accept",
+			"Authorization",
+		},
+		MaxAge: 86400,
+	}))
 
 	e.HTTPErrorHandler = httpx.NewErrorHandler()
 

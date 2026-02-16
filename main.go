@@ -5,9 +5,12 @@ import (
 	"crm_go/db/postgres"
 	"crm_go/delivery/httpserver"
 	"crm_go/delivery/httpserver/handlers/authHandler"
+	"crm_go/delivery/httpserver/handlers/userHandler"
+	"crm_go/delivery/httpserver/middlewares"
 	"crm_go/pkg/validation"
 	"crm_go/repositories/userRepository"
 	"crm_go/services/authService"
+	"crm_go/services/userService"
 	"log"
 	"time"
 
@@ -52,9 +55,14 @@ func main() {
 	defer db.Close()
 
 	repo := userRepository.New(db)
-	svc := authService.New(repo, *cache, authConfig)
-	h := authHandler.New(svc)
 
-	srv := httpserver.New(h)
+	authSvc := authService.New(repo, *cache, authConfig)
+	userSvc := userService.New(repo)
+
+	authH := authHandler.New(authSvc)
+	userH := userHandler.New(userSvc)
+	authMw := middlewares.Auth(authSvc)
+
+	srv := httpserver.New(authH, userH, authMw)
 	srv.Start()
 }

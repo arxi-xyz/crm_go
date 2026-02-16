@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"crm_go/delivery/httpserver/handlers/authHandler"
+	"crm_go/delivery/httpserver/handlers/userHandler"
 	"crm_go/pkg/httpx"
 	"net/http"
 
@@ -11,12 +12,20 @@ import (
 )
 
 type Server struct {
-	authHandler *authHandler.AuthHandler
+	authHandler    *authHandler.AuthHandler
+	userHandler    *userHandler.UserHandler
+	authMiddleware echo.MiddlewareFunc
 }
 
-func New(authHandler *authHandler.AuthHandler) *Server {
+func New(
+	authHandler *authHandler.AuthHandler,
+	userHandler *userHandler.UserHandler,
+	authMiddleware echo.MiddlewareFunc,
+) *Server {
 	return &Server{
-		authHandler: authHandler,
+		authHandler:    authHandler,
+		userHandler:    userHandler,
+		authMiddleware: authMiddleware,
 	}
 }
 
@@ -41,6 +50,9 @@ func (s *Server) Start() {
 	auth.POST("/login", s.authHandler.Login)
 	auth.POST("/refresh", s.authHandler.Refresh)
 	auth.GET("/logout", s.authHandler.Logout)
+
+	protected := api.Group("", s.authMiddleware)
+	protected.GET("/me", s.userHandler.Me)
 
 	api.GET("/ping", s.Ping)
 

@@ -60,6 +60,24 @@ definitions:
         additionalProperties: {}
         type: object
     type: object
+  userService.MeResponse:
+    properties:
+      created_at:
+        example: "2025-01-15T10:30:00Z"
+        type: string
+      first_name:
+        example: Sharif
+        type: string
+      last_name:
+        example: Mohammadi
+        type: string
+      phone:
+        example: "09130108631"
+        type: string
+      uuid:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
 host: localhost:8099
 info:
   contact: {}
@@ -157,6 +175,37 @@ paths:
       summary: Refresh tokens
       tags:
       - Auth
+  /me:
+    get:
+      description: Returns the authenticated user's profile information
+      parameters:
+      - description: Access Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/userService.MeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      summary: Get current user
+      tags:
+      - User
   /ping:
     get:
       description: Returns pong to verify the API is running

@@ -11,26 +11,22 @@ func (s *AuthService) Refresh(request RefreshRequest) (RefreshResponse, error) {
 		return RefreshResponse{}, err
 	}
 
-	tokenClaims, err := s.parseRefreshClaim(request.RefreshToken)
-	if err != nil {
-		return RefreshResponse{}, appError.Unauthorized("invalid_token", "invalid_token", err)
-	}
-
-	err = s.ValidateRefreshToken(tokenClaims)
-
+	claims, err := s.ValidateRefreshToken(request.RefreshToken)
 	if err != nil {
 		return RefreshResponse{}, err
 	}
 
-	s.Cache.Del(context.Background(), "sess:"+tokenClaims.ID)
-
-	uUid, err := tokenClaims.GetSubject()
-
+	uUid, err := claims.GetSubject()
 	if err != nil {
 		return RefreshResponse{}, appError.Unauthorized("invalid_token", "invalid_token", err)
 	}
 
+	s.Cache.Del(context.Background(), "sess:"+claims.ID)
+
 	token, refreshToken, err := s.generateTokens(uUid)
+	if err != nil {
+		return RefreshResponse{}, appError.Internal(err)
+	}
 
 	return RefreshResponse{
 		Token:        token,

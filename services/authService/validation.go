@@ -6,48 +6,46 @@ import (
 	"time"
 )
 
-func (s *AuthService) ValidateRefreshToken(tokenClaims *RefreshClaims) error {
-	if tokenClaims.TokenType != "refresh" {
-		return appError.Unauthorized("invalid_token", "invalid_token", nil)
-	}
-
-	err := s.validateExpireTime(tokenClaims)
-
+func (s *AuthService) ValidateRefreshToken(tokenString string) (*TokenClaims, error) {
+	claims, err := s.parseToken(tokenString)
 	if err != nil {
-		return err
+		return nil, appError.Unauthorized("invalid_token", "invalid_token", err)
 	}
 
-	err = s.validateRefreshTokenExistence(tokenClaims)
-
-	if err != nil {
-		return err
+	if claims.TokenType != "refresh" {
+		return nil, appError.Unauthorized("invalid_token", "invalid_token_type", nil)
 	}
 
-	return nil
+	if err := s.validateExpireTime(claims); err != nil {
+		return nil, err
+	}
+
+	if err := s.validateSessionExists(claims); err != nil {
+		return nil, err
+	}
+
+	return claims, nil
 }
 
-func (s *AuthService) ValidateToken(tokenClaims *RefreshClaims) error {
-	if tokenClaims.TokenType != "token" {
-		return appError.Unauthorized("invalid_token", "invalid_token", nil)
-	}
-
-	err := s.validateExpireTime(tokenClaims)
-
+func (s *AuthService) ValidateAccessToken(tokenString string) (*TokenClaims, error) {
+	claims, err := s.parseToken(tokenString)
 	if err != nil {
-		return err
+		return nil, appError.Unauthorized("invalid_token", "invalid_token", err)
 	}
 
-	err = s.validateRefreshTokenExistence(tokenClaims)
-
-	if err != nil {
-		return err
+	if claims.TokenType != "access" {
+		return nil, appError.Unauthorized("invalid_token", "invalid_token_type", nil)
 	}
 
-	return nil
+	if err := s.validateExpireTime(claims); err != nil {
+		return nil, err
+	}
+
+	return claims, nil
 }
 
-func (s *AuthService) validateExpireTime(tokenClaims *RefreshClaims) error {
-	expirationTime, err := tokenClaims.GetExpirationTime()
+func (s *AuthService) validateExpireTime(claims *TokenClaims) error {
+	expirationTime, err := claims.GetExpirationTime()
 	if err != nil {
 		return appError.Unauthorized("invalid_token", "invalid_token", err)
 	}
@@ -63,8 +61,8 @@ func (s *AuthService) validateExpireTime(tokenClaims *RefreshClaims) error {
 	return nil
 }
 
-func (s *AuthService) validateRefreshTokenExistence(tokenClaims *RefreshClaims) error {
-	cmd := s.Cache.Exists(context.Background(), "sess:"+tokenClaims.ID)
+func (s *AuthService) validateSessionExists(claims *TokenClaims) error {
+	cmd := s.Cache.Exists(context.Background(), "sess:"+claims.ID)
 
 	if err := cmd.Err(); err != nil {
 		return appError.Internal(err)

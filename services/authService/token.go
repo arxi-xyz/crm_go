@@ -9,12 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type AccessClaims struct {
-	jwt.RegisteredClaims
-	TokenType string `json:"typ"`
-}
-
-type RefreshClaims struct {
+type TokenClaims struct {
 	jwt.RegisteredClaims
 	TokenType string `json:"typ"`
 }
@@ -22,7 +17,7 @@ type RefreshClaims struct {
 func (s *AuthService) generateTokens(uUid string) (string, string, error) {
 	now := time.Now()
 
-	accessClaims := AccessClaims{
+	accessClaims := TokenClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    s.Config.Issuer,
 			Subject:   uUid,
@@ -39,7 +34,7 @@ func (s *AuthService) generateTokens(uUid string) (string, string, error) {
 	}
 
 	jti := uuid.NewString()
-	refreshClaims := RefreshClaims{
+	refreshClaims := TokenClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    s.Config.Issuer,
 			Subject:   uUid,
@@ -76,20 +71,19 @@ func (s *AuthService) generateTokens(uUid string) (string, string, error) {
 	return access, refresh, nil
 }
 
-func (s *AuthService) parseRefreshClaim(token string) (*RefreshClaims, error) {
-	claims := &RefreshClaims{}
-
-	withClaims, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+func (s *AuthService) parseToken(tokenStr string) (*TokenClaims, error) {
+	claims := &TokenClaims{}
+	tok, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+		if token.Method != jwt.SigningMethodHS256 {
+			return nil, errors.New("unexpected signing method")
+		}
 		return s.Config.JWTSecret, nil
 	})
-
 	if err != nil {
-		return claims, err
+		return nil, err
 	}
-
-	if !withClaims.Valid {
-		return claims, errors.New("invalid token")
+	if !tok.Valid {
+		return nil, errors.New("invalid token")
 	}
-
 	return claims, nil
 }

@@ -15,7 +15,13 @@ import (
 	"time"
 
 	_ "crm_go/docs"
+
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/dotenv"
+	"github.com/knadh/koanf/providers/file"
 )
+
+var k = koanf.New(".")
 
 //	@title			CRM Go API
 //	@version		1.0
@@ -27,32 +33,36 @@ import (
 func main() {
 	validation.Init()
 
-	db, err := postgres.New(postgres.Config{
-		Host:     "localhost",
-		Username: "crm_user",
-		Password: "crm_password",
-		Database: "crm",
-		SSLMode:  "disable",
-	})
-
-	cache := redis.New(redis.Config{
-		Host:     "localhost",
-		Port:     "6379",
-		Password: "",
-		Db:       0,
-	})
-
-	authConfig := authService.Config{
-		JWTSecret:  []byte("sharif_secret"),
-		AccessTTL:  15 * time.Minute,
-		RefreshTTL: 30 * 24 * time.Hour,
-		Issuer:     "crm_go",
+	if err := k.Load(file.Provider("./.env"), dotenv.Parser()); err != nil {
+		log.Fatalf("error loading config: %v", err)
 	}
+
+	db, err := postgres.New(postgres.Config{
+		Host:     k.String("DB_HOST"),
+		Port:     k.Int("DB_PORT"),
+		Username: k.String("DB_USER"),
+		Password: k.String("DB_PASSWORD"),
+		Database: k.String("DB_NAME"),
+		SSLMode:  k.String("DB_SSL_MODE"),
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer db.Close()
+
+	cache := redis.New(redis.Config{
+		Host:     k.String("REDIS_HOST"),
+		Port:     k.String("REDIS_PORT"),
+		Password: k.String("REDIS_PASSWORD"),
+		Db:       k.Int("REDIS_DB"),
+	})
+
+	authConfig := authService.Config{
+		JWTSecret:  []byte(k.String("JWT_SECRET")),
+		AccessTTL:  time.Duration(k.Int("JWT_ACCESS_TTL_MINUTES")) * time.Minute,
+		RefreshTTL: time.Duration(k.Int("JWT_REFRESH_TTL_DAYS")) * 24 * time.Hour,
+		Issuer:     k.String("JWT_ISSUER"),
+	}
 
 	repo := userRepository.New(db)
 
@@ -64,5 +74,5 @@ func main() {
 	authMw := middlewares.Auth(authSvc)
 
 	srv := httpserver.New(authH, userH, authMw)
-	srv.Start()
+	srv.Start(":" + k.String("SERVER_PORT"))
 }

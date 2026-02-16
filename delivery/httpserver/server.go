@@ -29,7 +29,7 @@ func New(
 	}
 }
 
-func (s *Server) Start() {
+func (s *Server) Start(addr string) {
 	e := echo.New()
 	e.Use(middleware.RequestLogger())
 
@@ -56,7 +56,7 @@ func (s *Server) Start() {
 
 	api.GET("/ping", s.Ping)
 
-	if err := e.Start(":8099"); err != nil {
+	if err := e.Start(addr); err != nil {
 		e.Logger.Error("failed to start server", "error", err)
 	}
 }

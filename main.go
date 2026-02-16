@@ -18,6 +18,7 @@ import (
 
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/dotenv"
+	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
 )
 
@@ -34,8 +35,12 @@ func main() {
 	validation.Init()
 
 	if err := k.Load(file.Provider("./.env"), dotenv.Parser()); err != nil {
-		log.Fatalf("error loading config: %v", err)
+		log.Println("no .env file found, reading from environment variables")
 	}
+
+	k.Load(env.Provider("", ".", func(s string) string {
+		return s
+	}), nil)
 
 	db, err := postgres.New(postgres.Config{
 		Host:     k.String("DB_HOST"),

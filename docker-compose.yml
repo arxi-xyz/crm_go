@@ -1,4 +1,60 @@
 services:
+  traefik:
+    image: traefik:v3.3
+    container_name: crm_traefik
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8081:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=web"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: crm_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    environment:
+      SERVER_PORT: "8099"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: crm_user
+      DB_PASSWORD: crm_password
+      DB_NAME: crm
+      DB_SSL_MODE: disable
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ""
+      REDIS_DB: "0"
+      JWT_SECRET: change_me_in_production
+      JWT_ACCESS_TTL_MINUTES: "15"
+      JWT_REFRESH_TTL_DAYS: "30"
+      JWT_ISSUER: crm_go
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`localhost`)"
+      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.services.api.loadbalancer.server.port=8099"
+
   postgres:
     image: postgres:16-alpine
     container_name: crm_postgres
@@ -28,8 +84,11 @@ services:
     environment:
       ADMINER_DEFAULT_SERVER: postgres
       TZ: Iran/Tehran
-    ports:
-      - "8080:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.localhost`)"
+      - "traefik.http.routers.adminer.entrypoints=web"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
 
   redis:
     image: redis:7-alpine
@@ -51,15 +110,15 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    ports:
-      - "5540:5540"
     volumes:
       - redisinsight_data:/data
-
-
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.redisinsight.rule=Host(`redis.localhost`)"
+      - "traefik.http.routers.redisinsight.entrypoints=web"
+      - "traefik.http.services.redisinsight.loadbalancer.server.port=5540"
 
 volumes:
   postgres_data:
   redis_data:
   redisinsight_data:
-

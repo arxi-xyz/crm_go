@@ -4,7 +4,6 @@ import (
 	"context"
 	"crm_go/pkg/appError"
 	"crm_go/pkg/validation"
-	"time"
 )
 
 func (s *AuthService) Refresh(request RefreshRequest) (RefreshResponse, error) {
@@ -17,39 +16,19 @@ func (s *AuthService) Refresh(request RefreshRequest) (RefreshResponse, error) {
 		return RefreshResponse{}, appError.Unauthorized("invalid_token", "invalid_token", err)
 	}
 
-	if tokenClaims.TokenType != "refresh" {
-		return RefreshResponse{}, appError.Unauthorized("invalid_token", "invalid_token", nil)
-	}
-	expirationTime, err := tokenClaims.GetExpirationTime()
+	err = s.ValidateRefreshToken(tokenClaims)
+
 	if err != nil {
-		return RefreshResponse{}, appError.Unauthorized("invalid_token", "invalid_token", err)
+		return RefreshResponse{}, err
 	}
 
-	if expirationTime == nil {
-		return RefreshResponse{}, appError.Unauthorized("invalid_token", "missing_exp", nil)
-	}
-
-	if expirationTime.Before(time.Now()) {
-		return RefreshResponse{}, appError.Unauthorized("invalid_token", "token_expired", nil)
-	}
+	s.Cache.Del(context.Background(), "sess:"+tokenClaims.ID)
 
 	uUid, err := tokenClaims.GetSubject()
 
 	if err != nil {
 		return RefreshResponse{}, appError.Unauthorized("invalid_token", "invalid_token", err)
 	}
-
-	cmd := s.Cache.Exists(context.Background(), "sess:"+tokenClaims.ID)
-
-	if err := cmd.Err(); err != nil {
-		return RefreshResponse{}, err
-	}
-
-	if cmd.Val() == 0 {
-		return RefreshResponse{}, appError.Unauthorized("invalid_token", "invalid_token", nil)
-	}
-
-	s.Cache.Del(context.Background(), "sess:"+tokenClaims.ID)
 
 	token, refreshToken, err := s.generateTokens(uUid)
 

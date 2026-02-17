@@ -57,12 +57,7 @@ func (s *AuthService) generateTokens(uUid string) (string, string, error) {
 		"exp": now.Add(s.Config.RefreshTTL).Unix(),
 	}
 
-	ctx := context.Background()
-	pipe := s.Cache.TxPipeline()
-
-	pipe.HSet(ctx, "sess:"+jti, redisInfo)
-	pipe.ExpireAt(ctx, "sess:"+jti, refreshClaims.ExpiresAt.Time)
-	_, err = pipe.Exec(ctx)
+	err = s.Cache.Set(context.Background(), "sess:"+jti, redisInfo, refreshClaims.ExpiresAt.Time)
 
 	if err != nil {
 		return "", "", err

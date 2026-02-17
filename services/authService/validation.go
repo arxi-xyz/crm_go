@@ -62,13 +62,12 @@ func (s *AuthService) validateExpireTime(claims *TokenClaims) error {
 }
 
 func (s *AuthService) validateSessionExists(claims *TokenClaims) error {
-	cmd := s.Cache.Exists(context.Background(), "sess:"+claims.ID)
-
-	if err := cmd.Err(); err != nil {
-		return appError.Internal(err)
+	exist, err := s.Cache.Exist(context.Background(), "sess:"+claims.ID)
+	if err != nil {
+		return err
 	}
 
-	if cmd.Val() == 0 {
+	if exist == 0 {
 		return appError.Unauthorized("invalid_token", "invalid_token", nil)
 	}
 

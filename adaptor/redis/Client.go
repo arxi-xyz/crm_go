@@ -13,7 +13,11 @@ type Config struct {
 	Db       int
 }
 
-func New(config Config) *redis.Client {
+type Client struct {
+	Client *redis.Client
+}
+
+func New(config Config) *Client {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", config.Host, config.Port),
 		Password: config.Password,
@@ -21,5 +25,5 @@ func New(config Config) *redis.Client {
 		Protocol: 2,
 	})
 
-	return rdb
+	return &Client{rdb}
 }

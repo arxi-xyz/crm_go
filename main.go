@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crm_go/cache/redis"
+	"crm_go/adaptor/redis"
 	"crm_go/db/postgres"
 	"crm_go/delivery/httpserver"
 	"crm_go/delivery/httpserver/handlers/authHandler"
@@ -71,7 +71,7 @@ func main() {
 
 	repo := userRepository.New(db)
 
-	authSvc := authService.New(repo, *cache, authConfig)
+	authSvc := authService.New(repo, cache, authConfig)
 	userSvc := userService.New(repo)
 
 	authH := authHandler.New(authSvc)

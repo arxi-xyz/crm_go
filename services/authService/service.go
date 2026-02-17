@@ -1,20 +1,18 @@
 package authService
 
 import (
+	"context"
 	"crm_go/entities"
 	"time"
-
-	"github.com/redis/go-redis/v9"
 )
 
 type AuthService struct {
 	UserRepository userRepositoryInterface
 	Config         Config
-	Cache          redis.Client
-	// todo: cache is completely coupled
+	Cache          redisClientInterface
 }
 
-func New(userRepository userRepositoryInterface, cache redis.Client, config Config) *AuthService {
+func New(userRepository userRepositoryInterface, cache redisClientInterface, config Config) *AuthService {
 	return &AuthService{
 		UserRepository: userRepository,
 		Config:         config,
@@ -24,6 +22,12 @@ func New(userRepository userRepositoryInterface, cache redis.Client, config Conf
 
 type userRepositoryInterface interface {
 	GetUserByPhone(phone string) (*entities.User, error)
+}
+
+type redisClientInterface interface {
+	Set(ctx context.Context, key string, value interface{}, expiration time.Time) error
+	Exist(ctx context.Context, key string) (int64, error)
+	Del(ctx context.Context, key string) error
 }
 type Config struct {
 	JWTSecret  []byte

@@ -42,3 +42,7 @@ func (h *UserHandler) Me(c *echo.Context) error {
 
 	return c.JSON(http.StatusOK, resp)
 }
+
+func (h *UserHandler) SetRoutes(g *echo.Group) {
+	g.POST("/me", h.Me)
+}

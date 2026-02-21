@@ -64,13 +64,10 @@ func (s *Server) Start(addr string) {
 
 	api := e.Group("/api")
 
-	auth := api.Group("/auth")
-	auth.POST("/login", s.authHandler.Login)
-	auth.POST("/refresh", s.authHandler.Refresh)
-	auth.GET("/logout", s.authHandler.Logout)
+	s.authHandler.SetRoutes(api)
 
 	protected := api.Group("", s.authMiddleware)
-	protected.GET("/me", s.userHandler.Me)
+	s.userHandler.SetRoutes(protected)
 
 	api.GET("/ping", s.Ping)
 

@@ -102,3 +102,11 @@ func (h *AuthHandler) Refresh(c *echo.Context) error {
 
 	return c.JSON(http.StatusOK, resp)
 }
+
+func (h AuthHandler) SetRoutes(g *echo.Group) {
+	auth := g.Group("/auth")
+
+	auth.POST("/login", h.Login)
+	auth.POST("/refresh", h.Refresh)
+	auth.GET("/logout", h.Logout)
+}

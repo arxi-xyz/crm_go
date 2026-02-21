@@ -24,7 +24,7 @@ func (s *AuthService) generateTokens(uUid string) (string, string, error) {
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(s.Config.AccessTTL)),
 		},
-		TokenType: "access",
+		TokenType: ACCESS,
 	}
 
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
@@ -42,7 +42,7 @@ func (s *AuthService) generateTokens(uUid string) (string, string, error) {
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(s.Config.RefreshTTL)),
 		},
-		TokenType: "refresh",
+		TokenType: REFRESH,
 	}
 
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)

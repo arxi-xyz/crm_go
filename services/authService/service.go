@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+const (
+	REFRESH = "refresh"
+	ACCESS  = "access"
+)
+
 type AuthService struct {
 	UserRepository userRepositoryInterface
 	Config         Config

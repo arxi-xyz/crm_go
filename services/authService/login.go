@@ -52,7 +52,7 @@ func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
 
 type LoginRequest struct {
 	Phone    string `json:"phone" validate:"required,ir_phone_number" example:"09130108631"`
-	Password string `json:"password" validate:"required,min=8" example:"mypassword123"`
+	Password string `json:"password" validate:"required,min=8,max=20" example:"mypassword123"`
 }
 
 type LoginResponse struct {

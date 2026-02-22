@@ -44,8 +44,8 @@ func TestLogin(t *testing.T) {
 	}
 
 	mockRepo := &MockUserRepository{
-		GetUserByPhoneFunc: func(phone string) (*entities.User, error) {
-			if phone == mockedUser.Phone {
+		GetUserByFunc: func(field, value string) (*entities.User, error) {
+			if value == mockedUser.Phone {
 				return &mockedUser, nil
 			}
 			return nil, nil

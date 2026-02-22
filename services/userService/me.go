@@ -7,7 +7,7 @@ import (
 )
 
 func (s *UserService) GetMe(uuid string) (MeResponse, error) {
-	user, err := s.UserRepository.GetUserByUUID(uuid)
+	user, err := s.UserRepository.GetUserBy("uuid", uuid)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return MeResponse{}, appError.NotFound("user_not_found", "user not found", err)

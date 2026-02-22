@@ -7,11 +7,11 @@ import (
 )
 
 type MockUserRepository struct {
-	GetUserByPhoneFunc func(phone string) (*entities.User, error)
+	GetUserByFunc func(field, value string) (*entities.User, error)
 }
 
-func (m *MockUserRepository) GetUserByPhone(phone string) (*entities.User, error) {
-	return m.GetUserByPhoneFunc(phone)
+func (m *MockUserRepository) GetUserBy(field, value string) (*entities.User, error) {
+	return m.GetUserByFunc(field, value)
 }
 
 type MockCache struct {

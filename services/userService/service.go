@@ -13,5 +13,5 @@ func New(userRepository userRepositoryInterface) *UserService {
 }
 
 type userRepositoryInterface interface {
-	GetUserByUUID(uuid string) (*entities.User, error)
+	GetUserBy(field, value string) (*entities.User, error)
 }

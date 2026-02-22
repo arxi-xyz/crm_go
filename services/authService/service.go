@@ -26,7 +26,7 @@ func New(userRepository userRepositoryInterface, cache redisClientInterface, con
 }
 
 type userRepositoryInterface interface {
-	GetUserByPhone(phone string) (*entities.User, error)
+	GetUserBy(field, value string) (*entities.User, error)
 }
 
 type redisClientInterface interface {

@@ -12,8 +12,8 @@ func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
 	if err := validation.V().Struct(request); err != nil {
 		return LoginResponse{}, err
 	}
-
-	user, err := s.UserRepository.GetUserByPhone(request.Phone)
+	
+	user, err := s.UserRepository.GetUserBy("phone", request.Phone)
 
 	if user == nil {
 		return LoginResponse{}, appError.Unauthorized("invalid_credential", "invalid credential", err)

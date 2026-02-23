@@ -4,7 +4,12 @@ import (
 	"crm_go/entities"
 	"database/sql"
 	"fmt"
+	"slices"
 )
+
+var fields = []string{
+	"id", "uuid", "phone", "first_name", "last_name", "email", "password", "created_at", "updated_at",
+}
 
 type Query interface {
 	QueryRow(query string, args ...interface{}) *sql.Row
@@ -20,6 +25,9 @@ func New(query Query) *UserRepository {
 }
 
 func (r *UserRepository) GetUserBy(field, value string) (*entities.User, error) {
+	if !slices.Contains(fields, field) {
+		return nil, fmt.Errorf("field %s not found", field)
+	}
 	query := fmt.Sprintf(`
 	SELECT id, uuid, phone, first_name, last_name, password, created_at, updated_at
 	FROM %s

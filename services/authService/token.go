@@ -2,6 +2,7 @@ package authService
 
 import (
 	"context"
+	"crm_go/pkg/appError"
 	"errors"
 	"time"
 
@@ -14,7 +15,7 @@ type TokenClaims struct {
 	TokenType string `json:"typ"`
 }
 
-func (s *AuthService) generateTokens(uUid string) (string, string, error) {
+func (s *AuthService) generateTokens(uUid string) (string, string, *appError.AppError) {
 	now := time.Now()
 
 	accessClaims := TokenClaims{
@@ -30,7 +31,7 @@ func (s *AuthService) generateTokens(uUid string) (string, string, error) {
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
 	access, err := accessToken.SignedString(s.Config.JWTSecret)
 	if err != nil {
-		return "", "", err
+		return "", "", appError.Internal(err)
 	}
 
 	jti := uuid.NewString()
@@ -48,7 +49,7 @@ func (s *AuthService) generateTokens(uUid string) (string, string, error) {
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
 	refresh, err := refreshToken.SignedString(s.Config.JWTSecret)
 	if err != nil {
-		return "", "", err
+		return "", "", appError.Internal(err)
 	}
 
 	redisInfo := map[string]any{
@@ -60,25 +61,26 @@ func (s *AuthService) generateTokens(uUid string) (string, string, error) {
 	err = s.Cache.Set(context.Background(), "sess:"+jti, redisInfo, refreshClaims.ExpiresAt.Time)
 
 	if err != nil {
-		return "", "", err
+		return "", "", appError.Internal(err)
+
 	}
 
 	return access, refresh, nil
 }
 
-func (s *AuthService) parseToken(tokenStr string) (*TokenClaims, error) {
+func (s *AuthService) parseToken(tokenStr string) (*TokenClaims, *appError.AppError) {
 	claims := &TokenClaims{}
 	tok, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 		if token.Method != jwt.SigningMethodHS256 {
-			return nil, errors.New("unexpected signing method")
+			return nil, errors.New("invalid signing method")
 		}
 		return s.Config.JWTSecret, nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, appError.Unauthorized(appError.UnauthorizedAccess, "invalid token", nil)
 	}
 	if !tok.Valid {
-		return nil, errors.New("invalid token")
+		return nil, appError.Unauthorized(appError.UnauthorizedAccess, "invalid token", nil)
 	}
 	return claims, nil
 }

@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS roles, model_has_role CASCADE;

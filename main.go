@@ -8,8 +8,11 @@ import (
 	"crm_go/delivery/httpserver/handlers/userHandler"
 	"crm_go/delivery/httpserver/middlewares"
 	"crm_go/pkg/validation"
+	"crm_go/repositories/permissionRepository"
+	"crm_go/repositories/roleRepository"
 	"crm_go/repositories/userRepository"
 	"crm_go/services/authService"
+	"crm_go/services/authorizationService"
 	"crm_go/services/userService"
 	"log"
 	"time"
@@ -70,8 +73,12 @@ func main() {
 	}
 
 	repo := userRepository.New(db)
+	roleRepo := roleRepository.New(db)
+	PermissionRepo := permissionRepository.New(db)
 
-	authSvc := authService.New(repo, cache, authConfig)
+	authzSvc := authorizationService.New(cache, roleRepo, PermissionRepo)
+
+	authSvc := authService.New(repo, authzSvc, cache, authConfig)
 	userSvc := userService.New(repo)
 
 	authH := authHandler.New(authSvc)

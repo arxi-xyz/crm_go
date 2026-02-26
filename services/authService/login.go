@@ -38,6 +38,12 @@ func (s *AuthService) Login(request LoginRequest) (LoginResponse, error) {
 		return LoginResponse{}, appErr
 	}
 
+	appErr = s.AuthorizationService.SetPermissionsToCache(user)
+
+	if appErr != nil {
+		return LoginResponse{}, appErr
+	}
+
 	return LoginResponse{
 		Token:        token,
 		RefreshToken: refreshToken,

@@ -3,6 +3,7 @@ package authService
 import (
 	"context"
 	"crm_go/entities"
+	"crm_go/pkg/appError"
 	"time"
 )
 
@@ -12,17 +13,23 @@ const (
 )
 
 type AuthService struct {
-	UserRepository userRepositoryInterface
-	Config         Config
-	Cache          redisClientInterface
+	UserRepository       userRepositoryInterface
+	AuthorizationService authorizationServiceInterface
+	Config               Config
+	Cache                redisClientInterface
 }
 
-func New(userRepository userRepositoryInterface, cache redisClientInterface, config Config) *AuthService {
+func New(userRepository userRepositoryInterface, authorizationService authorizationServiceInterface, cache redisClientInterface, config Config) *AuthService {
 	return &AuthService{
-		UserRepository: userRepository,
-		Config:         config,
-		Cache:          cache,
+		UserRepository:       userRepository,
+		Config:               config,
+		Cache:                cache,
+		AuthorizationService: authorizationService,
 	}
+}
+
+type authorizationServiceInterface interface {
+	SetPermissionsToCache(User *entities.User) *appError.AppError
 }
 
 type userRepositoryInterface interface {

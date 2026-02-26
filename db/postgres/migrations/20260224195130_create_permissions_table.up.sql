@@ -18,3 +18,18 @@ create table if not exists model_has_permission
 
 CREATE INDEX has_permission_index
     ON model_has_permission (model_type, model_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS model_has_permission_unique
+    ON model_has_permission (model_type, model_id, permission_id);
+
+insert into permissions (title, unique_key)
+values ('all', 'all');
+
+insert into permissions (title, unique_key)
+values ('create_profile', 'create_profile');
+insert into permissions (title, unique_key)
+values ('update_profile', 'update_profile');
+insert into permissions (title, unique_key)
+values ('delete_profile', 'delete_profile');
+insert into permissions (title, unique_key)
+values ('view_profile', 'view_profile');

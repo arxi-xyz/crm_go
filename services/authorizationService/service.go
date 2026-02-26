@@ -31,4 +31,5 @@ type permissionRepositoryInterface interface {
 
 type redisClientInterface interface {
 	SetSet(ctx context.Context, key string, members []interface{}, expireAt time.Time) *appError.AppError
+	IsMember(ctx context.Context, key string, member string) (bool, *appError.AppError)
 }

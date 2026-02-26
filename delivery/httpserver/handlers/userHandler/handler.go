@@ -1,6 +1,7 @@
 package userHandler
 
 import (
+	"crm_go/delivery/httpserver/middlewares"
 	"crm_go/services/userService"
 	"net/http"
 
@@ -19,7 +20,7 @@ func New(userService userServiceInterface) *UserHandler {
 	return &UserHandler{UserService: userService}
 }
 
-// @Summary		Get current user
+// Me @Summary		Get current user
 // @Description	Returns the authenticated user's profile information
 // @Tags			User
 // @Produce		json
@@ -43,6 +44,6 @@ func (h *UserHandler) Me(c *echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
-func (h *UserHandler) SetRoutes(g *echo.Group) {
-	g.POST("/me", h.Me)
+func (h *UserHandler) SetRoutes(g *echo.Group, authorizationService middlewares.AuthorizationServiceInterface) {
+	g.GET("/me", h.Me, middlewares.Authorization(authorizationService, "view_profile"))
 }

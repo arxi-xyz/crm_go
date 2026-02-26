@@ -3,6 +3,7 @@ package httpserver
 import (
 	"crm_go/delivery/httpserver/handlers/authHandler"
 	"crm_go/delivery/httpserver/handlers/userHandler"
+	"crm_go/delivery/httpserver/middlewares"
 	"crm_go/pkg/httpx"
 	"net/http"
 
@@ -12,20 +13,23 @@ import (
 )
 
 type Server struct {
-	authHandler    *authHandler.AuthHandler
-	userHandler    *userHandler.UserHandler
-	authMiddleware echo.MiddlewareFunc
+	authHandler          *authHandler.AuthHandler
+	userHandler          *userHandler.UserHandler
+	authMiddleware       echo.MiddlewareFunc
+	authorizationService middlewares.AuthorizationServiceInterface
 }
 
 func New(
 	authHandler *authHandler.AuthHandler,
 	userHandler *userHandler.UserHandler,
 	authMiddleware echo.MiddlewareFunc,
+	authorizationService middlewares.AuthorizationServiceInterface,
 ) *Server {
 	return &Server{
-		authHandler:    authHandler,
-		userHandler:    userHandler,
-		authMiddleware: authMiddleware,
+		authHandler:          authHandler,
+		userHandler:          userHandler,
+		authMiddleware:       authMiddleware,
+		authorizationService: authorizationService,
 	}
 }
 
@@ -67,7 +71,7 @@ func (s *Server) Start(addr string) {
 	s.authHandler.SetRoutes(api)
 
 	protected := api.Group("", s.authMiddleware)
-	s.userHandler.SetRoutes(protected)
+	s.userHandler.SetRoutes(protected, s.authorizationService)
 
 	api.GET("/ping", s.Ping)
 
@@ -76,7 +80,7 @@ func (s *Server) Start(addr string) {
 	}
 }
 
-// @Summary		Health check
+// Ping @Summary		Health check
 // @Description	Returns pong to verify the API is running
 // @Tags			Health
 // @Produce		json

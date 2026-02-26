@@ -85,6 +85,6 @@ func main() {
 	userH := userHandler.New(userSvc)
 	authMw := middlewares.Auth(authSvc)
 
-	srv := httpserver.New(authH, userH, authMw)
+	srv := httpserver.New(authH, userH, authMw, authzSvc)
 	srv.Start(":" + k.String("SERVER_PORT"))
 }

@@ -8,3 +8,7 @@ import (
 type authServiceInterface interface {
 	ValidateAccessToken(tokenString string) (*authService.TokenClaims, *appError.AppError)
 }
+
+type AuthorizationServiceInterface interface {
+	HasPermission(userUuid string, perm string) (bool, *appError.AppError)
+}
